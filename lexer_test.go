@@ -76,15 +76,15 @@ func tokReplace() token {
 }
 
 func tokArrowFun() token {
-	return token{tokenArrowFunction, "=>"}
+	return token{tokenMapFun, "=>"}
 }
 
 func tokLeftParen() token {
-	return token{tokenLeftParenthese, "("}
+	return token{tokenLeftParen, "("}
 }
 
 func tokRightParen() token {
-	return token{tokenRightParenthese, ")"}
+	return token{tokenRightParen, ")"}
 }
 
 func tokString(s string) token {

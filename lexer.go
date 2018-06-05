@@ -17,16 +17,16 @@ const (
 	tokenEOF
 
 	// operators
-	tokenArrowFunction // =>
+	tokenMapFun // "=>"
 
 	// delimiters
-	tokenLeftParenthese  // (
-	tokenRightParenthese // )
-	tokenNewline         // \n
+	tokenLeftParen  // "("
+	tokenRightParen // ")"
+	tokenNewline    // "\n"
 
 	// literals
-	tokenString // with double quote
-	tokenVersion
+	tokenString  // wrapped by double quote
+	tokenVersion // semver prefixed with "v" ex: v2.1.6
 
 	// keywords
 	tokenModule
@@ -144,16 +144,16 @@ func lexFile(l *lexer) lexFn {
 		case r == '"':
 			return lexString
 		case r == '(':
-			l.emit(tokenLeftParenthese)
+			l.emit(tokenLeftParen)
 			return lexFile
 		case r == ')':
-			l.emit(tokenRightParenthese)
+			l.emit(tokenRightParen)
 			return lexFile
 		case r == '=':
 			if l.next() != '>' {
 				return l.errorf("expect => got %q", string(r))
 			}
-			l.emit(tokenArrowFunction)
+			l.emit(tokenMapFun)
 			return lexFile
 		case isAlphaLower(r):
 			return lexKeyword
@@ -192,8 +192,14 @@ func lexString(l *lexer) lexFn {
 		case r == '"':
 			l.emit(tokenString)
 			return lexFile
-		case r == eof || isEOL(r):
+		case r == '\n', r == eof:
 			return l.errorf("unterminated string, got %s", string(r))
+		case r == '\\':
+			r = l.next()
+			if !(r == 't' || r == '\\') {
+				return l.errorf(`invalid escape char \%s`, string(r))
+			}
+			fallthrough
 		default:
 			// absorp
 		}
@@ -202,8 +208,8 @@ func lexString(l *lexer) lexFn {
 
 func lexVersion(l *lexer) lexFn {
 	for {
-		switch r := l.next(); {
-		case r == ' ' || r == eof || isEOL(r):
+		switch l.next() {
+		case ' ', '\n', eof:
 			l.backup()
 			l.emit(tokenVersion)
 			return lexFile
@@ -211,10 +217,6 @@ func lexVersion(l *lexer) lexFn {
 			// absorb
 		}
 	}
-}
-
-func isEOL(r rune) bool {
-	return strings.ContainsRune("\n\r", r)
 }
 
 func isWhiteSpace(r rune) bool {

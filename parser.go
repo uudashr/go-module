@@ -138,7 +138,7 @@ func parseVerb(p *parser) parseFn {
 func parsePkgList(add func(pkg Package)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
-		if t.kind == tokenLeftParenthese {
+		if t.kind == tokenLeftParen {
 			if t = p.nextToken(); t.kind != tokenNewline {
 				return p.errorf("expect newline, got %s", t)
 			}
@@ -163,7 +163,7 @@ func parsePkgList(add func(pkg Package)) parseFn {
 func parsePkgListElem(add func(pkg Package)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.skipNewline()
-		if t.kind == tokenRightParenthese {
+		if t.kind == tokenRightParen {
 			if t = p.nextToken(); t.kind != tokenNewline {
 				return p.errorf("expect newline, got %s", t)
 			}
@@ -188,7 +188,7 @@ func parsePkgListElem(add func(pkg Package)) parseFn {
 func parsePkgMapList(add func(m PackageMap)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
-		if t.kind == tokenLeftParenthese {
+		if t.kind == tokenLeftParen {
 			if t = p.nextToken(); t.kind != tokenNewline {
 				return p.errorf("expect newline, got %s", t)
 			}
@@ -213,7 +213,7 @@ func parsePkgMapList(add func(m PackageMap)) parseFn {
 func parsePkgMapListElem(add func(m PackageMap)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
-		if t.kind == tokenRightParenthese {
+		if t.kind == tokenRightParen {
 			if t = p.nextToken(); t.kind != tokenNewline {
 				return p.errorf("expect newline, got %s", t)
 			}
@@ -255,7 +255,7 @@ func readPkgMap(t token, p *parser) (*PackageMap, error) {
 		return nil, err
 	}
 
-	if t := p.nextToken(); t.kind != tokenArrowFunction {
+	if t := p.nextToken(); t.kind != tokenMapFun {
 		return nil, fmt.Errorf("expect '=>', got %s", t)
 	}
 
