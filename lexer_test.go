@@ -1,8 +1,53 @@
 package module
 
 import (
+	"fmt"
 	"testing"
 )
+
+func tokNewline() token {
+	return token{tokenNewline, "\n"}
+}
+
+func tokModule() token {
+	return token{tokenModule, "module"}
+}
+
+func tokRequire() token {
+	return token{tokenRequire, "require"}
+}
+
+func tokExclude() token {
+	return token{tokenExclude, "exclude"}
+}
+
+func tokReplace() token {
+	return token{tokenReplace, "replace"}
+}
+
+func tokArrowFun() token {
+	return token{tokenArrowFunction, "=>"}
+}
+
+func tokLeftParen() token {
+	return token{tokenLeftParenthese, "("}
+}
+
+func tokRightParen() token {
+	return token{tokenRightParenthese, ")"}
+}
+
+func tokString(s string) token {
+	return token{tokenString, fmt.Sprintf("%q", s)}
+}
+
+func tokVersion(s string) token {
+	return token{tokenVersion, s}
+}
+
+func tokEOF() token {
+	return token{tokenEOF, ""}
+}
 
 func TestLex(t *testing.T) {
 	input := `
@@ -16,42 +61,40 @@ func TestLex(t *testing.T) {
 		)
 		replace "bad/thing" v1.4.5 => "good/thing" v1.4.5
 	`
-
 	expects := []token{
-		token{tokenModule, "module"},
-		token{tokenString, `"my/thing"`},
+		tokNewline(),
 
-		token{tokenRequire, "require"},
-		token{tokenString, `"other/thing"`},
-		token{tokenVersion, "v1.0.2"},
+		tokModule(),
+		tokString("my/thing"), tokNewline(),
 
-		token{tokenRequire, "require"},
-		token{tokenString, `"new/thing"`},
-		token{tokenVersion, "v2.3.4"},
+		tokRequire(),
+		tokString("other/thing"), tokVersion("v1.0.2"), tokNewline(),
 
-		token{tokenExclude, "exclude"},
-		token{tokenString, `"old/thing"`},
-		token{tokenVersion, "v1.2.3"},
+		tokRequire(),
+		tokString("new/thing"), tokVersion("v2.3.4"), tokNewline(),
 
-		token{tokenRequire, "require"},
-		token{tokenLeftParenthese, "("},
-		token{tokenString, `"future/thing"`}, token{tokenVersion, "v2.3.4"},
-		token{tokenString, `"great/thing"`}, token{tokenVersion, "v1.2.3"},
-		token{tokenRightParenthese, ")"},
+		tokExclude(),
+		tokString("old/thing"), tokVersion("v1.2.3"), tokNewline(),
 
-		token{tokenReplace, "replace"},
-		token{tokenString, `"bad/thing"`}, token{tokenVersion, "v1.4.5"},
-		token{tokenArrowFunction, "=>"},
-		token{tokenString, `"good/thing"`}, token{tokenVersion, "v1.4.5"},
-		token{tokenEOF, ""},
+		tokRequire(),
+		tokLeftParen(), tokNewline(),
+		tokString("future/thing"), tokVersion("v2.3.4"), tokNewline(),
+		tokString("great/thing"), tokVersion("v1.2.3"), tokNewline(),
+		tokRightParen(), tokNewline(),
+
+		tokReplace(),
+		tokString("bad/thing"), tokVersion("v1.4.5"),
+		tokArrowFun(),
+		tokString("good/thing"), tokVersion("v1.4.5"), tokNewline(),
+
+		tokEOF(),
 	}
 
 	l := lex(input)
-	for _, e := range expects {
+	for i, e := range expects {
 		v := l.nextToken()
 		if got, want := v, e; got != want {
-			t.Error("got:", got, "want:", want)
+			t.Error("got:", got, "want:", want, "i:", i)
 		}
 	}
-
 }

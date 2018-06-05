@@ -1,7 +1,6 @@
 package module
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -76,9 +75,16 @@ func (p *parser) replacePkg(m PackageMap) {
 type parseFn func(p *parser) parseFn
 
 func parseModule(p *parser) parseFn {
-	t := p.nextToken()
-	if t.kind != tokenModule {
-		return p.errorf("expect module declaration")
+Loop:
+	for {
+		switch t := p.nextToken(); t.kind {
+		case tokenNewline:
+			// skip
+		case tokenModule:
+			break Loop
+		default:
+			return p.errorf("expect module declaration, got %s", t)
+		}
 	}
 
 	return parseModuleName
@@ -87,15 +93,19 @@ func parseModule(p *parser) parseFn {
 func parseModuleName(p *parser) parseFn {
 	t := p.nextToken()
 	if t.kind != tokenString {
-		return p.errorf("expect module name")
+		return p.errorf("expect module name, got %s", t)
 	}
 
 	p.file.Name = unquote(t.val)
+
+	if t = p.nextToken(); t.kind != tokenNewline {
+		return p.errorf("expect newline, got %s", t)
+	}
 	return parseVerb
 }
 
 func parseVerb(p *parser) parseFn {
-	switch p.nextToken().kind {
+	switch t := p.nextToken(); t.kind {
 	case tokenRequire:
 		return parsePkgList(p.requirePkg)
 	case tokenExclude:
@@ -105,7 +115,7 @@ func parseVerb(p *parser) parseFn {
 	case tokenEOF:
 		return nil
 	default:
-		return p.errorf("expect verb declaration")
+		return p.errorf("expect verb declaration, got %s", t)
 	}
 }
 
@@ -113,12 +123,20 @@ func parsePkgList(add func(pkg Package)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
 		if t.kind == tokenLeftParenthese {
+			if t = p.nextToken(); t.kind != tokenNewline {
+				return p.errorf("expect newline, got %s", t)
+			}
+
 			return parsePkgListElem(add)
 		}
 
 		pkg, err := readPkg(t, p)
 		if err != nil {
 			return p.error(err)
+		}
+
+		if t = p.nextToken(); t.kind != tokenNewline {
+			return p.errorf("expect newline, got %s", t)
 		}
 
 		add(*pkg)
@@ -130,12 +148,20 @@ func parsePkgListElem(add func(pkg Package)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
 		if t.kind == tokenRightParenthese {
+			if t = p.nextToken(); t.kind != tokenNewline {
+				return p.errorf("expect newline, got %s", t)
+			}
+
 			return parseVerb
 		}
 
 		pkg, err := readPkg(t, p)
 		if err != nil {
 			return p.error(err)
+		}
+
+		if t = p.nextToken(); t.kind != tokenNewline {
+			return p.errorf("expect newline, got %s", t)
 		}
 
 		add(*pkg)
@@ -147,12 +173,20 @@ func parsePkgMapList(add func(m PackageMap)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
 		if t.kind == tokenLeftParenthese {
+			if t = p.nextToken(); t.kind != tokenNewline {
+				return p.errorf("expect newline, got %s", t)
+			}
+
 			return parsePkgMapListElem(add)
 		}
 
 		pkgMap, err := readPkgMap(t, p)
 		if err != nil {
 			return p.error(err)
+		}
+
+		if t = p.nextToken(); t.kind != tokenNewline {
+			return p.errorf("expect newline, got %s", t)
 		}
 
 		add(*pkgMap)
@@ -164,12 +198,20 @@ func parsePkgMapListElem(add func(m PackageMap)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
 		if t.kind == tokenRightParenthese {
+			if t = p.nextToken(); t.kind != tokenNewline {
+				return p.errorf("expect newline, got %s", t)
+			}
+
 			return parseVerb
 		}
 
 		pkgMap, err := readPkgMap(t, p)
 		if err != nil {
 			return p.error(err)
+		}
+
+		if t = p.nextToken(); t.kind != tokenNewline {
+			return p.errorf("expect newline, got %s", t)
 		}
 
 		add(*pkgMap)
@@ -179,14 +221,13 @@ func parsePkgMapListElem(add func(m PackageMap)) parseFn {
 
 func readPkg(t token, p *parser) (*Package, error) {
 	if t.kind != tokenString {
-		return nil, errors.New("expect package declaration")
+		return nil, fmt.Errorf("expect package declaration, got %s", t)
 	}
 
 	path := unquote(t.val)
 
-	t = p.nextToken()
-	if t.kind != tokenVersion {
-		return nil, errors.New("expect package version")
+	if t = p.nextToken(); t.kind != tokenVersion {
+		return nil, fmt.Errorf("expect package version, got %s", t)
 	}
 
 	return &Package{path, t.val}, nil
@@ -198,8 +239,8 @@ func readPkgMap(t token, p *parser) (*PackageMap, error) {
 		return nil, err
 	}
 
-	if p.nextToken().kind != tokenArrowFunction {
-		return nil, errors.New("expect '=>'")
+	if t := p.nextToken(); t.kind != tokenArrowFunction {
+		return nil, fmt.Errorf("expect '=>', got %s", t)
 	}
 
 	new, err := readPkg(p.nextToken(), p)

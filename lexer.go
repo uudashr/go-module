@@ -22,6 +22,7 @@ const (
 	// delimiters
 	tokenLeftParenthese  // (
 	tokenRightParenthese // )
+	tokenNewline         // \n
 
 	// literals
 	tokenString // with double quote
@@ -44,6 +45,22 @@ var key = map[string]tokenKind{
 type token struct {
 	kind tokenKind
 	val  string
+}
+
+func (t token) String() string {
+	switch t.kind {
+	case tokenEOF:
+		return "EOF"
+	case tokenError:
+		return t.val
+	case tokenNewline:
+		return "newline"
+	}
+
+	if len(t.val) > 10 {
+		return fmt.Sprintf("%.10q...", t.val)
+	}
+	return fmt.Sprintf("%q", t.val)
 }
 
 type lexFn func(l *lexer) lexFn
@@ -69,7 +86,11 @@ func lex(input string) *lexer {
 func (l *lexer) nextToken() token {
 	for {
 		select {
-		case t := <-l.tokens:
+		case t, ok := <-l.tokens:
+			if !ok {
+				return token{tokenError, "no more token"}
+			}
+
 			if t.kind == tokenEOF {
 				close(l.tokens)
 			}
@@ -127,7 +148,7 @@ func (l *lexer) acceptWhile(fn func(r rune) bool) {
 func (l *lexer) emit(t tokenKind) {
 	i := token{t, l.input[l.start:l.pos]}
 	l.tokens <- i
-	l.width = l.pos
+	l.start = l.pos
 }
 
 func (l *lexer) errorf(format string, args ...interface{}) lexFn {
@@ -143,8 +164,9 @@ func lexFile(l *lexer) lexFn {
 	for {
 		switch r := l.next(); {
 		case isWhiteSpace(r):
-			// ignore all whitespace
 			l.ignore()
+		case r == '\n':
+			l.emit(tokenNewline)
 		case r == 'v':
 			return lexVersion
 		case r == '"':
@@ -164,6 +186,7 @@ func lexFile(l *lexer) lexFn {
 		case isAlphaLower(r):
 			return lexKeyword
 		case r == eof:
+			l.ignore()
 			l.emit(tokenEOF)
 			return nil
 		default:
@@ -178,18 +201,14 @@ func lexKeyword(l *lexer) lexFn {
 		case isAlphaLower(r):
 			// absorb
 		default:
-			if r != ' ' {
-				return l.errorf("unexpected character %q while lexKeyword", string(r))
-			}
-
 			l.backup()
 			word := l.input[l.start:l.pos]
-			t, ok := key[word]
+			kind, ok := key[word]
 			if !ok {
 				return l.errorf("invalid keyword %q while lexKeyword", word)
 			}
 
-			l.emit(t)
+			l.emit(kind)
 			return lexFile
 		}
 	}
@@ -227,7 +246,7 @@ func isEOL(r rune) bool {
 }
 
 func isWhiteSpace(r rune) bool {
-	return unicode.IsSpace(r)
+	return strings.ContainsRune(" \t", r)
 }
 
 func isAlphaLower(r rune) bool {
