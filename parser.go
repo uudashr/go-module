@@ -6,25 +6,25 @@ import (
 
 // Module represents the mod file.
 type Module struct {
-	Name     string
-	Requires []Package
-	Excludes []Package
-	Replaces []PackageMap
+	Name     string       // Name of module
+	Requires []Package    // Require declaration
+	Excludes []Package    // Exclude declaration
+	Replaces []PackageMap // Replace declaration
 }
 
 // PackageMap package mapping defintion.
 type PackageMap struct {
-	From Package
-	To   Package
+	From Package // Original package
+	To   Package // Destination package
 }
 
 // Package represents the package info.
 type Package struct {
-	Path    string
-	Version string
+	Path    string // Import path
+	Version string // Version (semver)
 }
 
-// Parse mod file.
+// Parse module file.
 func Parse(input string) (*Module, error) {
 	f := &Module{}
 	l := lex(input)
