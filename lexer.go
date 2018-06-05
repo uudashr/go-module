@@ -167,6 +167,7 @@ func lexFile(l *lexer) lexFn {
 			l.ignore()
 		case r == '\n':
 			l.emit(tokenNewline)
+			return lexFile
 		case r == 'v':
 			return lexVersion
 		case r == '"':

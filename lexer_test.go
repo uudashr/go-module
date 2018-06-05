@@ -5,50 +5,6 @@ import (
 	"testing"
 )
 
-func tokNewline() token {
-	return token{tokenNewline, "\n"}
-}
-
-func tokModule() token {
-	return token{tokenModule, "module"}
-}
-
-func tokRequire() token {
-	return token{tokenRequire, "require"}
-}
-
-func tokExclude() token {
-	return token{tokenExclude, "exclude"}
-}
-
-func tokReplace() token {
-	return token{tokenReplace, "replace"}
-}
-
-func tokArrowFun() token {
-	return token{tokenArrowFunction, "=>"}
-}
-
-func tokLeftParen() token {
-	return token{tokenLeftParenthese, "("}
-}
-
-func tokRightParen() token {
-	return token{tokenRightParenthese, ")"}
-}
-
-func tokString(s string) token {
-	return token{tokenString, fmt.Sprintf("%q", s)}
-}
-
-func tokVersion(s string) token {
-	return token{tokenVersion, s}
-}
-
-func tokEOF() token {
-	return token{tokenEOF, ""}
-}
-
 func TestLex(t *testing.T) {
 	input := `
 		module "my/thing"
@@ -97,4 +53,48 @@ func TestLex(t *testing.T) {
 			t.Error("got:", got, "want:", want, "i:", i)
 		}
 	}
+}
+
+func tokNewline() token {
+	return token{tokenNewline, "\n"}
+}
+
+func tokModule() token {
+	return token{tokenModule, "module"}
+}
+
+func tokRequire() token {
+	return token{tokenRequire, "require"}
+}
+
+func tokExclude() token {
+	return token{tokenExclude, "exclude"}
+}
+
+func tokReplace() token {
+	return token{tokenReplace, "replace"}
+}
+
+func tokArrowFun() token {
+	return token{tokenArrowFunction, "=>"}
+}
+
+func tokLeftParen() token {
+	return token{tokenLeftParenthese, "("}
+}
+
+func tokRightParen() token {
+	return token{tokenRightParenthese, ")"}
+}
+
+func tokString(s string) token {
+	return token{tokenString, fmt.Sprintf("%q", s)}
+}
+
+func tokVersion(s string) token {
+	return token{tokenVersion, s}
+}
+
+func tokEOF() token {
+	return token{tokenEOF, ""}
 }
