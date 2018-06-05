@@ -13,8 +13,8 @@ type tokenKind int
 
 const (
 	// special kind
-	tokenError tokenKind = iota
-	tokenEOF
+	tokenError tokenKind = iota // error
+	tokenEOF                    // end of file
 
 	// operators
 	tokenMapFun // "=>"
@@ -29,10 +29,10 @@ const (
 	tokenVersion // semver prefixed with "v" ex: v2.1.6
 
 	// keywords
-	tokenModule
-	tokenRequire
-	tokenExclude
-	tokenReplace
+	tokenModule  // module
+	tokenRequire // require
+	tokenExclude // exclude
+	tokenReplace // replace
 )
 
 var key = map[string]tokenKind{
