@@ -270,7 +270,3 @@ func readPkgMap(t token, p *parser) (*PackageMap, error) {
 func unquote(s string) string {
 	return s[1 : len(s)-1]
 }
-
-type tokenizer interface {
-	nextToken() token
-}

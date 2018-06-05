@@ -116,35 +116,6 @@ func (l *lexer) backup() {
 	l.pos -= l.width
 }
 
-func (l *lexer) peek() rune {
-	r := l.next()
-	l.backup()
-	return r
-}
-
-func (l *lexer) accept(valid string) bool {
-	if strings.ContainsRune(valid, l.next()) {
-		return true
-	}
-
-	l.backup()
-	return false
-}
-
-func (l *lexer) acceptRun(valid string) {
-	for strings.ContainsRune(valid, l.next()) {
-		// read another
-	}
-	l.backup()
-}
-
-func (l *lexer) acceptWhile(fn func(r rune) bool) {
-	for fn(l.next()) {
-		// read another
-	}
-	l.backup()
-}
-
 func (l *lexer) emit(t tokenKind) {
 	i := token{t, l.input[l.start:l.pos]}
 	l.tokens <- i
