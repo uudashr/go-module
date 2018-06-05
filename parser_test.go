@@ -71,13 +71,3 @@ func TestParse(t *testing.T) {
 		t.Error("got:", got, "want:", want)
 	}
 }
-
-func assertRequirePackage(t *testing.T, m *module.Module, pkgPath, pkgVer string) {
-	t.Helper()
-	for _, req := range m.Requires {
-		if req.Path == pkgPath && req.Version == pkgVer {
-			return
-		}
-	}
-	t.Errorf("expect package %q %s", pkgPath, pkgVer)
-}
