@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-// File represents the mod file.
-type File struct {
-	Module   string
+// Module represents the mod file.
+type Module struct {
+	Name     string
 	Requires []Package
 	Excludes []Package
 	Replaces []PackageMap
@@ -26,8 +26,8 @@ type Package struct {
 }
 
 // Parse mod file.
-func Parse(input string) (*File, error) {
-	f := &File{}
+func Parse(input string) (*Module, error) {
+	f := &Module{}
 	l := lex(input)
 	p := &parser{lexer: l, file: f}
 
@@ -44,7 +44,7 @@ func Parse(input string) (*File, error) {
 
 type parser struct {
 	lexer *lexer
-	file  *File
+	file  *Module
 	err   error
 }
 
@@ -90,7 +90,7 @@ func parseModuleName(p *parser) parseFn {
 		return p.errorf("expect module name")
 	}
 
-	p.file.Module = unquote(t.val)
+	p.file.Name = unquote(t.val)
 	return parseVerb
 }
 

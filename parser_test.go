@@ -60,7 +60,7 @@ func TestParse(t *testing.T) {
 	}
 }
 
-func assertRequirePackage(t *testing.T, m *module.File, pkgPath, pkgVer string) {
+func assertRequirePackage(t *testing.T, m *module.Module, pkgPath, pkgVer string) {
 	t.Helper()
 	for _, req := range m.Requires {
 		if req.Path == pkgPath && req.Version == pkgVer {
