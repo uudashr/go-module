@@ -51,6 +51,19 @@ func (p *parser) nextToken() token {
 	return p.lexer.nextToken()
 }
 
+func (p *parser) skipNewline() token {
+	for {
+		switch t := p.nextToken(); t.kind {
+		case tokenNewline:
+			// ignore
+		case tokenEOF:
+			fallthrough
+		default:
+			return t
+		}
+	}
+}
+
 func (p *parser) error(err error) parseFn {
 	p.err = err
 	return nil
@@ -149,7 +162,7 @@ func parsePkgList(add func(pkg Package)) parseFn {
 
 func parsePkgListElem(add func(pkg Package)) parseFn {
 	return func(p *parser) parseFn {
-		t := p.nextToken()
+		t := p.skipNewline()
 		if t.kind == tokenRightParenthese {
 			if t = p.nextToken(); t.kind != tokenNewline {
 				return p.errorf("expect newline, got %s", t)

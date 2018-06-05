@@ -21,6 +21,10 @@ func TestParse(t *testing.T) {
 			"new/bad/thing" v2.2.3
 		)
 		replace "bad/thing" v1.4.5 => "good/thing" v1.4.5
+		replace (
+			"bad/thing" v1.0.0 => "good/thing" v1.0.0
+			"new/bad/thing" v2.2.3 => "new/good/thing" v2.2.3
+		)
 	`
 
 	expectReqs := []module.Package{
@@ -39,6 +43,14 @@ func TestParse(t *testing.T) {
 		module.PackageMap{
 			From: module.Package{Path: "bad/thing", Version: "v1.4.5"},
 			To:   module.Package{Path: "good/thing", Version: "v1.4.5"},
+		},
+		module.PackageMap{
+			From: module.Package{Path: "bad/thing", Version: "v1.0.0"},
+			To:   module.Package{Path: "good/thing", Version: "v1.0.0"},
+		},
+		module.PackageMap{
+			From: module.Package{Path: "new/bad/thing", Version: "v2.2.3"},
+			To:   module.Package{Path: "new/good/thing", Version: "v2.2.3"},
 		},
 	}
 
