@@ -1,0 +1,16 @@
+go:
+  - 1.8.x
+  - 1.9.x
+  - 1.10.x
+  - tip
+
+os:
+  - linux
+  - osx
+
+before_script:
+  - make lint-prepare
+
+script:
+  - make lint
+  - make test
