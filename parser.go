@@ -51,6 +51,17 @@ func (p *parser) nextToken() token {
 	return p.lexer.nextToken()
 }
 
+func (p *parser) nextTokenSkipNewline() token {
+	for {
+		switch t := p.nextToken(); t.kind {
+		case tokenNewline:
+			// skip
+		default:
+			return t
+		}
+	}
+}
+
 func (p *parser) error(err error) parseFn {
 	p.err = err
 	return nil
@@ -112,6 +123,9 @@ func parseVerb(p *parser) parseFn {
 		return parsePkgList(p.excludePkg)
 	case tokenReplace:
 		return parsePkgMapList(p.replacePkg)
+	case tokenNewline:
+		// ignore
+		return parseVerb
 	case tokenEOF:
 		return nil
 	default:
