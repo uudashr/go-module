@@ -180,7 +180,7 @@ func lexFile(l *lexer) lexFn {
 			return lexFile
 		case r == '=':
 			if l.next() != '>' {
-				return l.errorf("expect =>")
+				return l.errorf("expect => got %q", string(r))
 			}
 			l.emit(tokenArrowFunction)
 			return lexFile
