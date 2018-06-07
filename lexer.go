@@ -116,8 +116,12 @@ func (l *lexer) backup() {
 	l.pos -= l.width
 }
 
+func (l *lexer) val() string {
+	return l.input[l.start:l.pos]
+}
+
 func (l *lexer) emit(t tokenKind) {
-	i := token{t, l.input[l.start:l.pos]}
+	i := token{t, l.val()}
 	l.tokens <- i
 	l.start = l.pos
 }
@@ -174,7 +178,7 @@ func lexKeyword(l *lexer) lexFn {
 			// absorb
 		default:
 			l.backup()
-			word := l.input[l.start:l.pos]
+			word := l.val()
 			kind, ok := key[word]
 			if !ok {
 				return l.errorf("invalid keyword %q while lexKeyword", word)
