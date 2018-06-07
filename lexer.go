@@ -120,13 +120,13 @@ func (l *lexer) val() string {
 	return l.input[l.start:l.pos]
 }
 
-func (l *lexer) emit(t tokenKind) {
-	i := token{t, l.val()}
+func (l *lexer) emit(kind tokenKind) {
+	i := token{kind, l.val()}
 	l.tokens <- i
 	l.start = l.pos
 }
 
-func (l *lexer) errorf(format string, args ...interface{}) lexFn {
+func (l *lexer) emitErrorf(format string, args ...interface{}) lexFn {
 	l.tokens <- token{tokenError, fmt.Sprintf(format, args...)}
 	return nil
 }
@@ -155,7 +155,7 @@ func lexFile(l *lexer) lexFn {
 			return lexFile
 		case r == '=':
 			if l.next() != '>' {
-				return l.errorf("expect => got %q", string(r))
+				return l.emitErrorf("expect => got %q", string(r))
 			}
 			l.emit(tokenMapFun)
 			return lexFile
@@ -166,7 +166,7 @@ func lexFile(l *lexer) lexFn {
 			l.emit(tokenEOF)
 			return nil
 		default:
-			return l.errorf("expecting valid keyword while lexFile, got %q", string(r))
+			return l.emitErrorf("expecting valid keyword while lexFile, got %q", string(r))
 		}
 	}
 }
@@ -181,7 +181,7 @@ func lexKeyword(l *lexer) lexFn {
 			word := l.val()
 			kind, ok := key[word]
 			if !ok {
-				return l.errorf("invalid keyword %q while lexKeyword", word)
+				return l.emitErrorf("invalid keyword %q while lexKeyword", word)
 			}
 
 			l.emit(kind)
@@ -197,11 +197,11 @@ func lexString(l *lexer) lexFn {
 			l.emit(tokenString)
 			return lexFile
 		case r == '\n', r == eof:
-			return l.errorf("unterminated string, got %s", string(r))
+			return l.emitErrorf("unterminated string, got %s", string(r))
 		case r == '\\':
 			r = l.next()
 			if !(r == 't' || r == '\\') {
-				return l.errorf(`invalid escape char \%s`, string(r))
+				return l.emitErrorf(`invalid escape char \%s`, string(r))
 			}
 			fallthrough
 		default:
