@@ -157,6 +157,7 @@ func lexFile(l *lexer) lexFn {
 			if l.next() != '>' {
 				return l.emitErrorf("expect => got %q", string(r))
 			}
+
 			l.emit(tokenMapFun)
 			return lexFile
 		case isAlphaLower(r):
