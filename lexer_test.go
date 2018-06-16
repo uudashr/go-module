@@ -46,7 +46,7 @@ func TestLex(t *testing.T) {
 		tokEOF(),
 	}
 
-	l := lex(input)
+	l := lexInString(input)
 	for i, e := range expects {
 		v := l.nextToken()
 		if got, want := v, e; got != want {

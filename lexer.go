@@ -69,18 +69,22 @@ type lexer struct {
 	start  int        // start position of the token
 	pos    int        // current read position of the input
 	width  int        // width of the last runes read from the input
-	input  string     // the input string being scanned
+	input  []byte     // the input bytes being scanned
 	tokens chan token // the scanned tokens
 	state  lexFn      // the current state of lexer
 }
 
-func lex(input string) *lexer {
+func lex(b []byte) *lexer {
 	l := &lexer{
-		input:  input,
+		input:  b,
 		tokens: make(chan token, 2),
 		state:  lexFile,
 	}
 	return l
+}
+
+func lexInString(s string) *lexer {
+	return lex([]byte(s))
 }
 
 func (l *lexer) nextToken() token {
@@ -107,7 +111,7 @@ func (l *lexer) next() (r rune) {
 		return eof
 	}
 
-	r, l.width = utf8.DecodeRuneInString(l.input[l.pos:])
+	r, l.width = utf8.DecodeRune(l.input[l.pos:])
 	l.pos += l.width
 	return r
 }
@@ -117,7 +121,7 @@ func (l *lexer) backup() {
 }
 
 func (l *lexer) val() string {
-	return l.input[l.start:l.pos]
+	return string(l.input[l.start:l.pos])
 }
 
 func (l *lexer) emit(kind tokenKind) {

@@ -14,7 +14,7 @@ func ExampleParse() {
 		exclude "old/thing" v1.2.3
 		replace "bad/thing" v1.4.5 => "good/thing" v1.4.5
 	`
-	m, err := module.Parse(in)
+	m, err := module.ParseInString(in)
 	if err != nil {
 		panic(err)
 	}

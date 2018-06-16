@@ -54,7 +54,7 @@ func TestParse(t *testing.T) {
 		},
 	}
 
-	m, err := module.Parse(in)
+	m, err := module.ParseInString(in)
 	if err != nil {
 		t.Fatal(err)
 	}

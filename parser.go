@@ -24,10 +24,10 @@ type Package struct {
 	Version string // Version (semver)
 }
 
-// Parse module file.
-func Parse(input string) (*Module, error) {
+// Parse module file from given b.
+func Parse(b []byte) (*Module, error) {
 	f := &Module{}
-	l := lex(input)
+	l := lex(b)
 	p := &parser{lexer: l, file: f}
 
 	for state := parseModule; state != nil; {
@@ -39,6 +39,11 @@ func Parse(input string) (*Module, error) {
 	}
 
 	return f, nil
+}
+
+// Prse module file from input string.
+func ParseInString(s string) (*Module, error) {
+	return Parse([]byte(s))
 }
 
 type parser struct {
