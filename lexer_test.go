@@ -56,45 +56,45 @@ func TestLex(t *testing.T) {
 }
 
 func tokNewline() token {
-	return token{tokenNewline, "\n"}
+	return token{kind: tokenNewline, val: "\n"}
 }
 
 func tokModule() token {
-	return token{tokenModule, "module"}
+	return token{kind: tokenModule, val: "module"}
 }
 
 func tokRequire() token {
-	return token{tokenRequire, "require"}
+	return token{kind: tokenRequire, val: "require"}
 }
 
 func tokExclude() token {
-	return token{tokenExclude, "exclude"}
+	return token{kind: tokenExclude, val: "exclude"}
 }
 
 func tokReplace() token {
-	return token{tokenReplace, "replace"}
+	return token{kind: tokenReplace, val: "replace"}
 }
 
 func tokArrowFun() token {
-	return token{tokenMapFun, "=>"}
+	return token{kind: tokenMapFun, val: "=>"}
 }
 
 func tokLeftParen() token {
-	return token{tokenLeftParen, "("}
+	return token{kind: tokenLeftParen, val: "("}
 }
 
 func tokRightParen() token {
-	return token{tokenRightParen, ")"}
+	return token{kind: tokenRightParen, val: ")"}
 }
 
 func tokString(s string) token {
-	return token{tokenString, fmt.Sprintf("%q", s)}
+	return token{kind: tokenString, val: fmt.Sprintf("%q", s)}
 }
 
 func tokVersion(s string) token {
-	return token{tokenVersion, s}
+	return token{kind: tokenVersion, val: s}
 }
 
 func tokEOF() token {
-	return token{tokenEOF, ""}
+	return token{kind: tokenEOF, val: ""}
 }

@@ -92,7 +92,7 @@ func (l *lexer) nextToken() token {
 		select {
 		case t, ok := <-l.tokens:
 			if !ok {
-				return token{tokenError, "no more token"}
+				return token{kind: tokenError, val: "no more token"}
 			}
 
 			if t.kind == tokenEOF {
@@ -125,13 +125,13 @@ func (l *lexer) val() string {
 }
 
 func (l *lexer) emit(kind tokenKind) {
-	i := token{kind, l.val()}
+	i := token{kind: kind, val: l.val()}
 	l.tokens <- i
 	l.start = l.pos
 }
 
 func (l *lexer) emitErrorf(format string, args ...interface{}) lexFn {
-	l.tokens <- token{tokenError, fmt.Sprintf(format, args...)}
+	l.tokens <- token{kind: tokenError, val: fmt.Sprintf(format, args...)}
 	return nil
 }
 

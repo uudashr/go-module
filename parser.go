@@ -251,7 +251,7 @@ func readPkg(t token, p *parser) (*Package, error) {
 		return nil, fmt.Errorf("expect package version, got %s", t)
 	}
 
-	return &Package{path, t.val}, nil
+	return &Package{Path: path, Version: t.val}, nil
 }
 
 func readPkgMap(t token, p *parser) (*PackageMap, error) {
@@ -269,7 +269,7 @@ func readPkgMap(t token, p *parser) (*PackageMap, error) {
 		return nil, err
 	}
 
-	return &PackageMap{*old, *new}, nil
+	return &PackageMap{From: *old, To: *new}, nil
 }
 
 func unquote(s string) string {
