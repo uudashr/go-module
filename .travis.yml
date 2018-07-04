@@ -8,6 +8,10 @@ go:
   - 1.10.x
   - tip
 
+matrix:
+  allow_failures:
+    - go: tip
+
 os:
   - linux
   - osx
