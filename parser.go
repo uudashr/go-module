@@ -41,7 +41,7 @@ func Parse(b []byte) (*Module, error) {
 	return f, nil
 }
 
-// Prse module file from input string.
+// ParseInString module file from input string.
 func ParseInString(s string) (*Module, error) {
 	return Parse([]byte(s))
 }
