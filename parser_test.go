@@ -28,27 +28,27 @@ func TestParse(t *testing.T) {
 	`
 
 	expectReqs := []module.Package{
-		module.Package{Path: "other/thing", Version: "v1.0.2"},
-		module.Package{Path: "new/thing", Version: "v2.3.4"},
-		module.Package{Path: "other/new/thing", Version: "v1.2.3"},
+		{Path: "other/thing", Version: "v1.0.2"},
+		{Path: "new/thing", Version: "v2.3.4"},
+		{Path: "other/new/thing", Version: "v1.2.3"},
 	}
 
 	expectExcl := []module.Package{
-		module.Package{Path: "old/thing", Version: "v1.2.3"},
-		module.Package{Path: "bad/thing", Version: "v1.0.0"},
-		module.Package{Path: "new/bad/thing", Version: "v2.2.3"},
+		{Path: "old/thing", Version: "v1.2.3"},
+		{Path: "bad/thing", Version: "v1.0.0"},
+		{Path: "new/bad/thing", Version: "v2.2.3"},
 	}
 
 	expectRepl := []module.PackageMap{
-		module.PackageMap{
+		{
 			From: module.Package{Path: "bad/thing", Version: "v1.4.5"},
 			To:   module.Package{Path: "good/thing", Version: "v1.4.5"},
 		},
-		module.PackageMap{
+		{
 			From: module.Package{Path: "bad/thing", Version: "v1.0.0"},
 			To:   module.Package{Path: "good/thing", Version: "v1.0.0"},
 		},
-		module.PackageMap{
+		{
 			From: module.Package{Path: "new/bad/thing", Version: "v2.2.3"},
 			To:   module.Package{Path: "new/good/thing", Version: "v2.2.3"},
 		},
