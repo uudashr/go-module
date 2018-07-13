@@ -12,7 +12,7 @@ type Module struct {
 	Replaces []PackageMap // Replace declaration
 }
 
-// PackageMap package mapping defintion.
+// PackageMap package mapping definition.
 type PackageMap struct {
 	From Package // Original package
 	To   Package // Destination package
