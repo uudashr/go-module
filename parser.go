@@ -110,11 +110,11 @@ Loop:
 
 func parseModuleName(p *parser) parseFn {
 	t := p.nextToken()
-	if t.kind != tokenString {
+	if t.kind != tokenNakedVal {
 		return p.errorf("expect module name, got %s", t)
 	}
 
-	p.file.Name = unquote(t.val)
+	p.file.Name = t.val
 
 	if t = p.nextToken(); t.kind != tokenNewline {
 		return p.errorf("expect newline, got %s", t)
@@ -241,13 +241,13 @@ func parsePkgMapListElem(add func(m PackageMap)) parseFn {
 }
 
 func readPkg(t token, p *parser) (*Package, error) {
-	if t.kind != tokenString {
+	if t.kind != tokenNakedVal {
 		return nil, fmt.Errorf("expect package declaration, got %s", t)
 	}
 
-	path := unquote(t.val)
+	path := t.val
 
-	if t = p.nextToken(); t.kind != tokenVersion {
+	if t = p.nextToken(); t.kind != tokenNakedVal {
 		return nil, fmt.Errorf("expect package version, got %s", t)
 	}
 

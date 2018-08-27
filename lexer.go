@@ -25,8 +25,7 @@ const (
 	tokenNewline    // "\n"
 
 	// literals
-	tokenString  // wrapped by double quote
-	tokenVersion // semver prefixed with "v" ex: v2.1.6
+	tokenNakedVal // naked value (string like, without double quote)
 
 	// keywords
 	tokenModule  // module
@@ -147,8 +146,6 @@ func lexFile(l *lexer) lexFn {
 		case r == '\n':
 			l.emit(tokenNewline)
 			return lexFile
-		case r == 'v':
-			return lexVersion
 		case r == '"':
 			return lexString
 		case r == '(':
@@ -164,8 +161,8 @@ func lexFile(l *lexer) lexFn {
 
 			l.emit(tokenMapFun)
 			return lexFile
-		case isAlphaLower(r):
-			return lexKeyword
+		case isAlpha(r):
+			return lexKeywordOrNakedVal
 		case r == eof:
 			l.ignore()
 			l.emit(tokenEOF)
@@ -176,20 +173,20 @@ func lexFile(l *lexer) lexFn {
 	}
 }
 
-func lexKeyword(l *lexer) lexFn {
+func lexKeywordOrNakedVal(l *lexer) lexFn {
 	for {
 		switch r := l.next(); {
-		case isAlphaLower(r):
+		case unicode.IsLetter(r), unicode.IsDigit(r), strings.ContainsRune("+-./", r):
 			// absorb
 		default:
 			l.backup()
 			word := l.val()
-			kind, ok := key[word]
-			if !ok {
-				return l.emitErrorf("invalid keyword %q while lexKeyword", word)
+			if kind, ok := key[word]; ok {
+				l.emit(kind)
+				return lexFile
 			}
 
-			l.emit(kind)
+			l.emit(tokenNakedVal)
 			return lexFile
 		}
 	}
@@ -198,9 +195,6 @@ func lexKeyword(l *lexer) lexFn {
 func lexString(l *lexer) lexFn {
 	for {
 		switch r := l.next(); {
-		case r == '"':
-			l.emit(tokenString)
-			return lexFile
 		case r == '\n', r == eof:
 			return l.emitErrorf("unterminated string, got %s", string(r))
 		case r == '\\':
@@ -215,12 +209,12 @@ func lexString(l *lexer) lexFn {
 	}
 }
 
-func lexVersion(l *lexer) lexFn {
+func lexNakedVal(l *lexer) lexFn {
 	for {
 		switch l.next() {
 		case ' ', '\n', eof:
 			l.backup()
-			l.emit(tokenVersion)
+			l.emit(tokenNakedVal)
 			return lexFile
 		default:
 			// absorb
@@ -232,6 +226,6 @@ func isWhiteSpace(r rune) bool {
 	return strings.ContainsRune(" \t", r)
 }
 
-func isAlphaLower(r rune) bool {
-	return unicode.IsLetter(r) && unicode.IsLower(r)
+func isAlpha(r rune) bool {
+	return unicode.IsLetter(r)
 }
