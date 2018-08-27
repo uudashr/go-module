@@ -209,19 +209,6 @@ func lexString(l *lexer) lexFn {
 	}
 }
 
-func lexNakedVal(l *lexer) lexFn {
-	for {
-		switch l.next() {
-		case ' ', '\n', eof:
-			l.backup()
-			l.emit(tokenNakedVal)
-			return lexFile
-		default:
-			// absorb
-		}
-	}
-}
-
 func isWhiteSpace(r rune) bool {
 	return strings.ContainsRune(" \t", r)
 }

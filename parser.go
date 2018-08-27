@@ -271,7 +271,3 @@ func readPkgMap(t token, p *parser) (*PackageMap, error) {
 
 	return &PackageMap{From: *old, To: *new}, nil
 }
-
-func unquote(s string) string {
-	return s[1 : len(s)-1]
-}
