@@ -186,7 +186,7 @@ func lexFile(l *lexer) lexFn {
 func lexKeywordOrNakedVal(l *lexer) lexFn {
 	for {
 		switch r := l.next(); {
-		case unicode.IsLetter(r), unicode.IsDigit(r), strings.ContainsRune("+-./", r):
+		case unicode.IsLetter(r), unicode.IsDigit(r), strings.ContainsRune("+-./_", r):
 			// absorb
 		default:
 			l.backup()
