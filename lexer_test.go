@@ -7,12 +7,14 @@ import (
 func TestLex(t *testing.T) {
 	input := `
 		module my/thing
+		go 1.12
 		require other/thing v1.0.2
 		require new/thing v2.3.4
 		exclude old/thing v1.2.3
 		require (
 			future/thing v2.3.4
 			great/thing v1.2.3
+			indirect/thing v5.6.7 // indirect
 		)
 		replace bad/thing v1.4.5 => good/thing v1.4.5
 	`
@@ -21,6 +23,9 @@ func TestLex(t *testing.T) {
 
 		tokModule(),
 		tokNakedVal("my/thing"), tokNewline(),
+
+		tokGo(),
+		tokNakedVal("1.12"), tokNewline(),
 
 		tokRequire(),
 		tokNakedVal("other/thing"), tokNakedVal("v1.0.2"), tokNewline(),
@@ -35,6 +40,7 @@ func TestLex(t *testing.T) {
 		tokLeftParen(), tokNewline(),
 		tokNakedVal("future/thing"), tokNakedVal("v2.3.4"), tokNewline(),
 		tokNakedVal("great/thing"), tokNakedVal("v1.2.3"), tokNewline(),
+		tokNakedVal("indirect/thing"), tokNakedVal("v5.6.7"), tokIndirectComment(), tokNewline(),
 		tokRightParen(), tokNewline(),
 
 		tokReplace(),
@@ -62,6 +68,10 @@ func tokModule() token {
 	return token{kind: tokenModule, val: "module"}
 }
 
+func tokGo() token {
+	return token{kind: tokenGo, val: "go"}
+}
+
 func tokRequire() token {
 	return token{kind: tokenRequire, val: "require"}
 }
@@ -84,6 +94,10 @@ func tokLeftParen() token {
 
 func tokRightParen() token {
 	return token{kind: tokenRightParen, val: ")"}
+}
+
+func tokIndirectComment() token {
+	return token{kind: tokenIndirectComment, val: "indirect"}
 }
 
 func tokNakedVal(s string) token {

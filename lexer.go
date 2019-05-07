@@ -28,17 +28,21 @@ const (
 	tokenNakedVal // naked value (string like, without double quote)
 
 	// keywords
-	tokenModule  // module
-	tokenRequire // require
-	tokenExclude // exclude
-	tokenReplace // replace
+	tokenModule          // module
+	tokenRequire         // require
+	tokenExclude         // exclude
+	tokenReplace         // replace
+	tokenGo              // go
+	tokenIndirectComment // indirect comment
 )
 
 var key = map[string]tokenKind{
-	"module":  tokenModule,
-	"require": tokenRequire,
-	"exclude": tokenExclude,
-	"replace": tokenReplace,
+	"module":   tokenModule,
+	"require":  tokenRequire,
+	"exclude":  tokenExclude,
+	"replace":  tokenReplace,
+	"go":       tokenGo,
+	"indirect": tokenIndirectComment,
 }
 
 type token struct {
@@ -163,6 +167,12 @@ func lexFile(l *lexer) lexFn {
 			return lexFile
 		case isAlpha(r):
 			return lexKeywordOrNakedVal
+		case r >= '0' && r <= '9':
+			return lexKeywordOrNakedVal
+		case r == '_':
+			return lexKeywordOrNakedVal
+		case r == '/':
+			l.ignore()
 		case r == eof:
 			l.ignore()
 			l.emit(tokenEOF)

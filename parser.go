@@ -6,10 +6,11 @@ import (
 
 // Module represents the mod file.
 type Module struct {
-	Name     string       // Name of module
-	Requires []Package    // Require declaration
-	Excludes []Package    // Exclude declaration
-	Replaces []PackageMap // Replace declaration
+	GoVersion string       // Go version
+	Name      string       // Name of module
+	Requires  []Package    // Require declaration
+	Excludes  []Package    // Exclude declaration
+	Replaces  []PackageMap // Replace declaration
 }
 
 // PackageMap package mapping definition.
@@ -20,8 +21,9 @@ type PackageMap struct {
 
 // Package represents the package info.
 type Package struct {
-	Path    string // Import path
-	Version string // Version (semver)
+	Path     string // Import path
+	Version  string // Version (semver)
+	Indirect bool   // Indirect
 }
 
 // Parse module file from given b.
@@ -78,6 +80,10 @@ func (p *parser) errorf(format string, args ...interface{}) parseFn {
 	return p.error(fmt.Errorf(format, args...))
 }
 
+func (p *parser) goVersion(v string) {
+	p.file.GoVersion = v
+}
+
 func (p *parser) requirePkg(pkg Package) {
 	p.file.Requires = append(p.file.Requires, pkg)
 }
@@ -130,6 +136,8 @@ func parseVerb(p *parser) parseFn {
 		return parsePkgList(p.excludePkg)
 	case tokenReplace:
 		return parsePkgMapList(p.replacePkg)
+	case tokenGo:
+		return parseGoVersion(p.goVersion)
 	case tokenNewline:
 		// ignore
 		return parseVerb
@@ -137,6 +145,14 @@ func parseVerb(p *parser) parseFn {
 		return nil
 	default:
 		return p.errorf("expect verb declaration, got %s", t)
+	}
+}
+
+func parseGoVersion(add func(pkg string)) parseFn {
+	return func(p *parser) parseFn {
+		t := p.nextToken()
+		add(t.val)
+		return parseVerb
 	}
 }
 
@@ -157,7 +173,10 @@ func parsePkgList(add func(pkg Package)) parseFn {
 		}
 
 		if t = p.nextToken(); t.kind != tokenNewline {
-			return p.errorf("expect newline, got %s", t)
+			if t.kind != tokenIndirectComment {
+				return p.errorf("expect newline, got %s", t)
+			}
+			pkg.Indirect = true
 		}
 
 		add(*pkg)
@@ -182,7 +201,10 @@ func parsePkgListElem(add func(pkg Package)) parseFn {
 		}
 
 		if t = p.nextToken(); t.kind != tokenNewline {
-			return p.errorf("expect newline, got %s", t)
+			if t.kind != tokenIndirectComment {
+				return p.errorf("expect newline, got %s", t)
+			}
+			pkg.Indirect = true
 		}
 
 		add(*pkg)

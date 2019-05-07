@@ -14,6 +14,7 @@ func TestParse(t *testing.T) {
 		require (
 			new/thing v2.3.4
 			other/new/thing v1.2.3
+			indirect/thing v5.6.7 // indirect
 		)
 		exclude old/thing v1.2.3
 		exclude (
@@ -31,6 +32,7 @@ func TestParse(t *testing.T) {
 		{Path: "other/thing", Version: "v1.0.2"},
 		{Path: "new/thing", Version: "v2.3.4"},
 		{Path: "other/new/thing", Version: "v1.2.3"},
+		{Path: "indirect/thing", Version: "v5.6.7", Indirect: true},
 	}
 
 	expectExcl := []module.Package{
