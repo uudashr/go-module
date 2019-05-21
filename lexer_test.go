@@ -17,7 +17,11 @@ func TestLex(t *testing.T) {
 			indirect/thing v5.6.7 // indirect
 		)
 		replace bad/thing v1.4.5 => good/thing v1.4.5
+		// refer: https://github.com/gin-gonic/gin/issues/1673
 	`
+	// input := `
+	// 	// refer: https://github.com/gin-gonic/gin/issues/1673
+	// `
 	expects := []token{
 		tokNewline(),
 
@@ -40,7 +44,7 @@ func TestLex(t *testing.T) {
 		tokLeftParen(), tokNewline(),
 		tokNakedVal("future/thing"), tokNakedVal("v2.3.4"), tokNewline(),
 		tokNakedVal("great/thing"), tokNakedVal("v1.2.3"), tokNewline(),
-		tokNakedVal("indirect/thing"), tokNakedVal("v5.6.7"), tokIndirectComment(), tokNewline(),
+		tokNakedVal("indirect/thing"), tokNakedVal("v5.6.7"), tokComment(), tokIndirectComment(), tokNewline(),
 		tokRightParen(), tokNewline(),
 
 		tokReplace(),
@@ -48,13 +52,22 @@ func TestLex(t *testing.T) {
 		tokArrowFun(),
 		tokNakedVal("good/thing"), tokNakedVal("v1.4.5"), tokNewline(),
 
+		tokComment(), tokNewline(),
+
 		tokEOF(),
 	}
+	// expects := []token{
+	// 	tokNewline(),
+	// 	tokComment(), tokNewline(),
+	// 	tokEOF(),
+	// }
 
 	l := lexInString(input)
 	for i, e := range expects {
 		v := l.nextToken()
 		if got, want := v, e; got != want {
+			t.Errorf("got %d %s", got.kind, got.val)
+			t.Errorf("want %d %s", want.kind, want.val)
 			t.Error("got:", got, "want:", want, "i:", i)
 		}
 	}
@@ -94,6 +107,10 @@ func tokLeftParen() token {
 
 func tokRightParen() token {
 	return token{kind: tokenRightParen, val: ")"}
+}
+
+func tokComment() token {
+	return token{kind: tokenComment, val: "//"}
 }
 
 func tokIndirectComment() token {

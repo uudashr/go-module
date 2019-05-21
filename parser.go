@@ -84,6 +84,10 @@ func (p *parser) goVersion(v string) {
 	p.file.GoVersion = v
 }
 
+func (p *parser) comment(v string) {
+	// do nothing
+}
+
 func (p *parser) requirePkg(pkg Package) {
 	p.file.Requires = append(p.file.Requires, pkg)
 }
@@ -138,6 +142,8 @@ func parseVerb(p *parser) parseFn {
 		return parsePkgMapList(p.replacePkg)
 	case tokenGo:
 		return parseGoVersion(p.goVersion)
+	case tokenComment:
+		return parseComment(p.comment)
 	case tokenNewline:
 		// ignore
 		return parseVerb
@@ -152,6 +158,18 @@ func parseGoVersion(add func(pkg string)) parseFn {
 	return func(p *parser) parseFn {
 		t := p.nextToken()
 		add(t.val)
+		return parseVerb
+	}
+}
+
+func parseComment(add func(pkg string)) parseFn {
+	return func(p *parser) parseFn {
+		for {
+			t := p.nextToken()
+			if t.kind == tokenNewline {
+				break
+			}
+		}
 		return parseVerb
 	}
 }
@@ -173,10 +191,12 @@ func parsePkgList(add func(pkg Package)) parseFn {
 		}
 
 		if t = p.nextToken(); t.kind != tokenNewline {
-			if t.kind != tokenIndirectComment {
+			if t.kind != tokenComment {
 				return p.errorf("expect newline, got %s", t)
 			}
-			pkg.Indirect = true
+			if t = p.nextToken(); t.kind == tokenIndirectComment {
+				pkg.Indirect = true
+			}
 		}
 
 		add(*pkg)
@@ -189,7 +209,7 @@ func parsePkgListElem(add func(pkg Package)) parseFn {
 		t := p.skipNewline()
 		if t.kind == tokenRightParen {
 			if t = p.nextToken(); t.kind != tokenNewline {
-				return p.errorf("expect newline, got %s", t)
+				return p.errorf("2 expect newline, got %s", t)
 			}
 
 			return parseVerb
@@ -201,10 +221,12 @@ func parsePkgListElem(add func(pkg Package)) parseFn {
 		}
 
 		if t = p.nextToken(); t.kind != tokenNewline {
-			if t.kind != tokenIndirectComment {
-				return p.errorf("expect newline, got %s", t)
+			if t.kind != tokenComment {
+				return p.errorf("3 expect newline, got %s", t)
 			}
-			pkg.Indirect = true
+			if t = p.nextToken(); t.kind == tokenIndirectComment {
+				pkg.Indirect = true
+			}
 		}
 
 		add(*pkg)

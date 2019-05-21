@@ -33,6 +33,7 @@ const (
 	tokenExclude         // exclude
 	tokenReplace         // replace
 	tokenGo              // go
+	tokenComment         // //
 	tokenIndirectComment // indirect comment
 )
 
@@ -42,6 +43,7 @@ var key = map[string]tokenKind{
 	"exclude":  tokenExclude,
 	"replace":  tokenReplace,
 	"go":       tokenGo,
+	"//":       tokenComment,
 	"indirect": tokenIndirectComment,
 }
 
@@ -172,13 +174,44 @@ func lexFile(l *lexer) lexFn {
 		case r == '_':
 			return lexKeywordOrNakedVal
 		case r == '/':
-			l.ignore()
+			return lexComment
 		case r == eof:
 			l.ignore()
 			l.emit(tokenEOF)
 			return nil
 		default:
 			return l.emitErrorf("expecting valid keyword while lexFile, got %q", string(r))
+		}
+	}
+}
+
+func lexComment(l *lexer) lexFn {
+	r := l.next()
+	if r != '/' {
+		l.backup()
+		return lexFile
+	}
+	l.emit(tokenComment)
+	l.ignore()
+
+	comment := ""
+	for {
+		r := l.next()
+		if isWhiteSpace(r) {
+			comment += l.val()
+			l.ignore()
+			continue
+		}
+		if r == '\n' {
+			l.backup()
+			comment += l.val()
+			// log.Printf("comment: '%s'", comment)
+			comment = strings.TrimSpace(comment)
+			if kind, ok := key[comment]; ok {
+				l.emit(kind)
+			}
+			l.ignore()
+			return lexFile
 		}
 	}
 }

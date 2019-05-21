@@ -26,6 +26,7 @@ func TestParse(t *testing.T) {
 			bad/thing v1.0.0 => good/thing v1.0.0
 			new/bad/thing v2.2.3 => new/good/thing v2.2.3
 		)
+		// refer: https://github.com/gin-gonic/gin/issues/1673
 	`
 
 	expectReqs := []module.Package{
