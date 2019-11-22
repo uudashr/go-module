@@ -1,3 +1,7 @@
+:no_entry: [DEPRECATED] This project is no longer maintained. Consider using https://github.com/sirkon/goproxy/tree/master/gomod instead.
+
+---
+
 [![Build Status](https://travis-ci.org/uudashr/go-module.svg?branch=master)](https://travis-ci.org/uudashr/go-module) [![GoDoc](https://godoc.org/github.com/uudashr/go-module?status.svg)](https://godoc.org/github.com/uudashr/go-module)
 # go-module
 
