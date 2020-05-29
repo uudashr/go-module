@@ -1,4 +1,5 @@
-:no_entry: [DEPRECATED] This project is no longer maintained. Consider using https://github.com/sirkon/goproxy/tree/master/gomod instead.
+:no_entry: [DEPRECATED] This project is no longer maintained. Use official
+module `golang.org/x/mod`, link https://pkg.go.dev/golang.org/x/mod
 
 ---
 
