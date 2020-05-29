@@ -28,17 +28,23 @@ const (
 	tokenNakedVal // naked value (string like, without double quote)
 
 	// keywords
-	tokenModule  // module
-	tokenRequire // require
-	tokenExclude // exclude
-	tokenReplace // replace
+	tokenModule          // module
+	tokenRequire         // require
+	tokenExclude         // exclude
+	tokenReplace         // replace
+	tokenGo              // go
+	tokenComment         // //
+	tokenIndirectComment // indirect comment
 )
 
 var key = map[string]tokenKind{
-	"module":  tokenModule,
-	"require": tokenRequire,
-	"exclude": tokenExclude,
-	"replace": tokenReplace,
+	"module":   tokenModule,
+	"require":  tokenRequire,
+	"exclude":  tokenExclude,
+	"replace":  tokenReplace,
+	"go":       tokenGo,
+	"//":       tokenComment,
+	"indirect": tokenIndirectComment,
 }
 
 type token struct {
@@ -163,6 +169,12 @@ func lexFile(l *lexer) lexFn {
 			return lexFile
 		case isAlpha(r):
 			return lexKeywordOrNakedVal
+		case r >= '0' && r <= '9':
+			return lexKeywordOrNakedVal
+		case r == '_':
+			return lexKeywordOrNakedVal
+		case r == '/':
+			return lexComment
 		case r == eof:
 			l.ignore()
 			l.emit(tokenEOF)
@@ -173,10 +185,41 @@ func lexFile(l *lexer) lexFn {
 	}
 }
 
+func lexComment(l *lexer) lexFn {
+	r := l.next()
+	if r != '/' {
+		l.backup()
+		return lexFile
+	}
+	l.emit(tokenComment)
+	l.ignore()
+
+	comment := ""
+	for {
+		r := l.next()
+		if isWhiteSpace(r) {
+			comment += l.val()
+			l.ignore()
+			continue
+		}
+		if r == '\n' {
+			l.backup()
+			comment += l.val()
+			// log.Printf("comment: '%s'", comment)
+			comment = strings.TrimSpace(comment)
+			if kind, ok := key[comment]; ok {
+				l.emit(kind)
+			}
+			l.ignore()
+			return lexFile
+		}
+	}
+}
+
 func lexKeywordOrNakedVal(l *lexer) lexFn {
 	for {
 		switch r := l.next(); {
-		case unicode.IsLetter(r), unicode.IsDigit(r), strings.ContainsRune("+-./", r):
+		case unicode.IsLetter(r), unicode.IsDigit(r), strings.ContainsRune("+-./_", r):
 			// absorb
 		default:
 			l.backup()
